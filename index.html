@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello AI (OpenRouter)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    textarea { width: 100%; height: 80px; }
+    button { padding: 10px 20px; margin-top: 10px; }
+    #response { margin-top: 20px; padding: 10px; border: 1px solid #ddd; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Hello AI 🌐</h1>
+  <p>Type a prompt below and get a response from the AI (works locally with your API key).</p>
+  
+  <textarea id="prompt" placeholder="Say hello to AI..."></textarea><br>
+  <button onclick="askAI()">Send</button>
+  
+  <div id="response"></div>
+  
+  <script>
+    async function askAI() {
+      const prompt = document.getElementById("prompt").value;
+      const responseDiv = document.getElementById("response");
+      responseDiv.innerText = "Loading...";
+
+      try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            //"Authorization": "Bearer YOUR_API_KEY",
+            "HTTP-Referer": "http://127.0.0.1:5500",
+            "X-Title": "Hello AI Demo"
+          },
+          body: JSON.stringify({
+            model: "deepseek/deepseek-chat-v3.1:free",
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+
+        const data = await res.json();
+        console.log("API response:", data);
+
+        if (data.choices && data.choices.length > 0) {
+          responseDiv.innerText = data.choices[0].message.content;
+        } else if (data.error) {
+          responseDiv.innerText = "API Error: " + data.error.message;
+        } else {
+          responseDiv.innerText = "Unexpected response: " + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        responseDiv.innerText = "Fetch error: " + error;
+      }
+    }
+  </script>
+</body>
+</html>
